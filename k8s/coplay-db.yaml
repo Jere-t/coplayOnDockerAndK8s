@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coplay-db
+  #namespace is not really usefull is small project --> remove the line and it will be in default namespace
+  #namespace: database
+  labels:
+    app: coplaydb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coplaydb
+  template:
+    metadata:
+      labels:
+        app: coplaydb
+    spec:
+      volumes:
+      - name: dbdata
+        persistentVolumeClaim:
+          claimName: claim-pv
+      containers:
+      - name: db
+        image: mysql:5.7
+        volumeMounts:
+        - name: dbdata
+          mountPath: /data/dbdata
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: coplaydb-secret
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: coplaydb-secret
+              key: mysql-pwd
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: coplaydb-secret
+              key: mysql-root-pwd
+        - name: MYSQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: coplaydb-secret
+              key: mysql-database
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coplaydb-service
+  #namespace is not really usefull is small project --> remove the line and it will be in default namespace
+  #namespace: database
+spec:
+  selector: #to connect to Pod through label
+    app: coplaydb
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306 #container port --> has to match with the containerPort bellow

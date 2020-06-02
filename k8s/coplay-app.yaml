@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coplay-app
+  #namespace is not really usefull is small project --> remove the line and it will be in default namespace
+  #namespace: coplay
+  labels:
+    app: coplay-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coplay-app
+  template:
+    metadata:
+      labels:
+        app: coplay-app
+    spec:
+      containers:
+      - name: coplayapp
+        image: jeret/coplay-app
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REACT_APP_API_ROOT
+          value: "localhost"
+        - name: REACT_APP_API_PORT
+          value: "3001"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coplay-app-service
+  #namespace is not really usefull is small project --> remove the line and it will be in default namespace
+  #namespace: coplay
+spec:
+  selector:
+    app: coplay-app
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30000 #port for external IP address, this is the one we put in the browser

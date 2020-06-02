@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coplaydb-configmap
+  #namespace is not really usefull is small project --> remove the line and it will be in default namespace
+  namespace: coplay
+data:
+  #database_url: mongodb-service <-- without namespace
+  database_url: coplaydb-service
+                #<url>.<namespace>
